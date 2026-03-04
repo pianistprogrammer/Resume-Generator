@@ -8,7 +8,7 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.database import init_db
+from app.database import connect_to_mongo
 from app.schemas.user import User, FeedSource, UserProfile
 from app.services.auth_service import AuthService
 from app.config import settings
@@ -28,16 +28,16 @@ async def create_admin_user():
     if existing_admin:
         print(f"✅ Admin user already exists: {admin_email}")
 
-        # Ensure is_admin flag is set
-        if not existing_admin.is_admin:
-            existing_admin.is_admin = True
+        # Ensure role is set to admin
+        if existing_admin.role != "admin":
+            existing_admin.role = "admin"
             existing_admin.save()
-            print("   Updated admin flag")
+            print("   Updated role to admin")
 
         return existing_admin
 
     # Create admin user
-    hashed_password = AuthService.hash_password(admin_password)
+    hashed_password = AuthService.get_password_hash(admin_password)
 
     admin_user = User(
         email=admin_email,
@@ -47,7 +47,7 @@ async def create_admin_user():
             email=admin_email,
             location="Global"
         ),
-        is_admin=True,
+        role="admin",
         is_active=True,
         onboarding_completed=True,
         credits=999999  # Unlimited credits for admin
@@ -112,7 +112,7 @@ async def main():
     print("🚀 Initializing admin user and default feeds...\n")
 
     # Initialize database
-    init_db()
+    connect_to_mongo()
 
     # Create admin user
     await create_admin_user()

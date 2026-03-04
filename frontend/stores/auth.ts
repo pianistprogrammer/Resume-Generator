@@ -8,7 +8,7 @@ interface User {
   location: string
   credits: number
   onboarding_completed: boolean
-  is_admin: boolean
+  role: string
 }
 
 interface TokenResponse {

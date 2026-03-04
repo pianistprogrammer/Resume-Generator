@@ -260,7 +260,8 @@ import { X } from 'lucide-vue-next'
 import { api } from '~/utils/api'
 
 definePageMeta({
-  layout: 'app'
+  layout: 'app',
+  middleware: ['auth', 'user']
 })
 
 const loading = ref(true)

@@ -50,11 +50,11 @@ async def get_users(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     search: Optional[str] = None,
-    is_admin: Optional[bool] = None,
+    role: Optional[str] = None,
     admin: User = Depends(get_current_admin)
 ):
     """Get all users with pagination and filtering."""
-    users = await AdminService.get_all_users(skip, limit, search, is_admin)
+    users = await AdminService.get_all_users(skip, limit, search, role)
     return ApiResponse(
         success=True,
         msg="Users retrieved",

@@ -776,7 +776,8 @@ import { useAuthStore } from '~/stores/auth'
 import { api } from '~/utils/api'
 
 definePageMeta({
-  layout: 'app'
+  layout: 'app',
+  middleware: ['auth', 'user']
 })
 
 const authStore = useAuthStore()

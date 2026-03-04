@@ -69,19 +69,6 @@
             <Settings :size="20" />
             <span class="font-medium">Settings</span>
           </NuxtLink>
-
-          <!-- Admin Link (only for admins) -->
-          <NuxtLink
-            v-if="user?.is_admin"
-            to="/admin"
-            class="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all"
-            :class="isActive('/admin')
-              ? 'bg-purple-600 text-white hover:bg-purple-700'
-              : 'text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'"
-          >
-            <Shield :size="20" />
-            <span class="font-medium">Admin</span>
-          </NuxtLink>
         </nav>
 
         <!-- User menu -->
@@ -125,7 +112,7 @@
 </template>
 
 <script setup lang="ts">
-import { LayoutDashboard, Target, User, Sliders, Settings, Sun, Moon, Shield } from 'lucide-vue-next'
+import { LayoutDashboard, Target, User, Sliders, Settings, Sun, Moon } from 'lucide-vue-next'
 import { useAuthStore } from '~/stores/auth'
 
 const authStore = useAuthStore()

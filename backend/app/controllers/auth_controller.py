@@ -55,7 +55,8 @@ async def register(request: RegisterRequest, background_tasks: BackgroundTasks):
             "full_name": user.profile.full_name,
             "location": user.profile.location,
             "credits": user.credits,
-            "onboarding_completed": user.onboarding_completed
+            "onboarding_completed": user.onboarding_completed,
+            "role": user.role
         }
     }
 
@@ -95,7 +96,8 @@ async def login(request: LoginRequest):
             "full_name": user.profile.full_name,
             "location": user.profile.location,
             "credits": user.credits,
-            "onboarding_completed": user.onboarding_completed
+            "onboarding_completed": user.onboarding_completed,
+            "role": user.role
         }
     }
 
@@ -116,7 +118,8 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "location": current_user.profile.location,
         "credits": current_user.credits,
         "onboarding_completed": current_user.onboarding_completed,
-        "is_active": current_user.is_active
+        "is_active": current_user.is_active,
+        "role": current_user.role
     }
 
     return ApiResponse[UserResponse](
@@ -140,7 +143,8 @@ async def refresh_token(current_user: User = Depends(get_current_user)):
             "full_name": current_user.profile.full_name,
             "location": current_user.profile.location,
             "credits": current_user.credits,
-            "onboarding_completed": current_user.onboarding_completed
+            "onboarding_completed": current_user.onboarding_completed,
+            "role": current_user.role
         }
     }
 

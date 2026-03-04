@@ -259,8 +259,10 @@ const handleLogin = async () => {
 
     await authStore.login(loginForm.email, loginForm.password)
 
-    // Redirect based on onboarding status
-    if (authStore.needsOnboarding) {
+    // Redirect based on role and onboarding status
+    if (authStore.user?.role === 'admin') {
+      router.push('/admin')
+    } else if (authStore.needsOnboarding) {
       router.push('/onboarding')
     } else {
       router.push('/dashboard')
@@ -298,7 +300,9 @@ onMounted(() => {
   authStore.init()
 
   if (authStore.isAuthenticated) {
-    if (authStore.needsOnboarding) {
+    if (authStore.user?.role === 'admin') {
+      router.push('/admin')
+    } else if (authStore.needsOnboarding) {
       router.push('/onboarding')
     } else {
       router.push('/dashboard')

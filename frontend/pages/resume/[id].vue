@@ -271,7 +271,7 @@ import { ChevronLeft, Download, CheckCircle, AlertCircle } from 'lucide-vue-next
 
 definePageMeta({
   layout: 'app',
-  middleware: 'auth'
+  middleware: ['auth', 'user']
 })
 
 const route = useRoute()

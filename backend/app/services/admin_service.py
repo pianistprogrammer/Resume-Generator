@@ -61,7 +61,7 @@ class AdminService:
         skip: int = 0,
         limit: int = 50,
         search: Optional[str] = None,
-        is_admin: Optional[bool] = None
+        role: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Get all users with pagination and filtering."""
         loop = asyncio.get_event_loop()
@@ -76,8 +76,8 @@ class AdminService:
                     Q(profile__full_name__icontains=search)
                 )
 
-            if is_admin is not None:
-                query = query.filter(is_admin=is_admin)
+            if role is not None:
+                query = query.filter(role=role)
 
             return list(query.skip(skip).limit(limit).order_by('-created_at'))
 
@@ -88,7 +88,7 @@ class AdminService:
                 "id": str(user.id),
                 "email": user.email,
                 "full_name": user.profile.full_name if user.profile else None,
-                "is_admin": user.is_admin,
+                "role": user.role,
                 "is_active": user.is_active,
                 "credits": user.credits,
                 "onboarding_completed": user.onboarding_completed,
@@ -130,7 +130,7 @@ class AdminService:
                 "desired_roles": user.preferences.desired_roles if user.preferences else [],
                 "remote_preference": user.preferences.remote_preference if user.preferences else None,
             },
-            "is_admin": user.is_admin,
+            "role": user.role,
             "is_active": user.is_active,
             "onboarding_completed": user.onboarding_completed,
             "credits": user.credits,
@@ -171,7 +171,7 @@ class AdminService:
 
         def _update():
             user = User.objects.get(id=user_id)
-            user.is_admin = not user.is_admin
+            user.role = "admin" if user.role == "user" else "user"
             user.updated_at = datetime.utcnow()
             user.save()
             return user
@@ -181,7 +181,7 @@ class AdminService:
         return {
             "id": str(user.id),
             "email": user.email,
-            "is_admin": user.is_admin,
+            "role": user.role,
         }
 
     @staticmethod

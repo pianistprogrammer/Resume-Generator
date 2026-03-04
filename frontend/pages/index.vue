@@ -17,7 +17,9 @@ onMounted(() => {
   authStore.init()
 
   if (authStore.isAuthenticated) {
-    if (authStore.needsOnboarding) {
+    if (authStore.user?.role === 'admin') {
+      navigateTo('/admin')
+    } else if (authStore.needsOnboarding) {
       navigateTo('/onboarding')
     } else {
       navigateTo('/dashboard')

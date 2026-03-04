@@ -149,7 +149,7 @@ import { Search, MapPin, Clock, ChevronRight, RefreshCw } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'app',
-  middleware: 'auth'
+  middleware: ['auth', 'user']
 })
 
 const activeTab = ref('all')

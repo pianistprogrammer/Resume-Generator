@@ -16,7 +16,7 @@ interface User {
   id: string
   email: string
   full_name: string
-  is_admin: boolean
+  role: string
   is_active: boolean
   credits: number
   onboarding_completed: boolean
@@ -84,14 +84,14 @@ export const useAdminStore = defineStore('admin', () => {
   }
 
   // Users
-  const fetchUsers = async (params: { skip?: number; limit?: number; search?: string; is_admin?: boolean } = {}) => {
+  const fetchUsers = async (params: { skip?: number; limit?: number; search?: string; role?: string } = {}) => {
     try {
       loading.value = true
       const queryParams = new URLSearchParams()
       if (params.skip !== undefined) queryParams.append('skip', params.skip.toString())
       if (params.limit !== undefined) queryParams.append('limit', params.limit.toString())
       if (params.search) queryParams.append('search', params.search)
-      if (params.is_admin !== undefined) queryParams.append('is_admin', params.is_admin.toString())
+      if (params.role !== undefined) queryParams.append('role', params.role)
 
       const response = await api.get<{ users: User[] }>(`/admin/users?${queryParams.toString()}`)
       users.value = response.users

@@ -29,7 +29,7 @@
                 {{ user.full_name || 'No Name' }}
               </h3>
               <span
-                v-if="user.is_admin"
+v-if="user.role === 'admin'"
                 class="badge bg-purple-600/20 text-purple-400 text-xs"
               >
                 ADMIN
@@ -181,7 +181,7 @@ const saveCredits = async () => {
 }
 
 const toggleAdmin = async (user: any) => {
-  if (confirm(`${user.is_admin ? 'Remove' : 'Grant'} admin access for ${user.email}?`)) {
+  if (confirm(`${user.role === 'admin' ? 'Remove' : 'Grant'} admin access for ${user.email}?`)) {
     try {
       await adminStore.toggleUserAdmin(user.id)
     } catch (error) {

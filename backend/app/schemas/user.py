@@ -11,6 +11,11 @@ import hashlib
 
 
 # Enums
+class UserRole(str, Enum):
+    USER = "user"
+    ADMIN = "admin"
+
+
 class MatchStatus(str, Enum):
     NEW = "new"
     SAVED = "saved"
@@ -167,7 +172,7 @@ class User(Document):
     is_active = BooleanField(default=True)
     is_verified = BooleanField(default=False)
     onboarding_completed = BooleanField(default=False)
-    is_admin = BooleanField(default=False)
+    role = StringField(default=UserRole.USER.value, choices=[UserRole.USER.value, UserRole.ADMIN.value])
 
     # Credits
     credits = IntField(default=3)  # Free credits
