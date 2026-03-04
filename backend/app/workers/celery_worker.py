@@ -63,10 +63,10 @@ def ingest_all_feeds_task():
     from app.database import connect_to_mongo
 
     async def _run():
-        await connect_to_mongo()
         results = await XMLFeedService.ingest_all_feeds()
         return results
 
+    connect_to_mongo()  # Sync call, not await
     results = run_async(_run())
     return {"status": "completed", "results": results}
 
@@ -78,10 +78,10 @@ def ingest_url_task(url: str, user_id: str):
     from app.database import connect_to_mongo
 
     async def _run():
-        await connect_to_mongo()
         result = await URLParserService.ingest_from_url(url)
         return result
 
+    connect_to_mongo()  # Sync call, not await
     result = run_async(_run())
     return {"status": "completed", "result": result}
 
@@ -93,11 +93,11 @@ def generate_resume_task(match_id: str):
     from app.database import connect_to_mongo
 
     async def _run():
-        await connect_to_mongo()
         service = ResumeService()
         resume = await service.generate_resume(match_id)
         return str(resume.id)
 
+    connect_to_mongo()  # Sync call, not await
     resume_id = run_async(_run())
 
     # TODO: Generate PDF and send notification
@@ -113,13 +113,13 @@ def send_daily_digests_task():
     from app.database import connect_to_mongo
 
     async def _run():
-        await connect_to_mongo()
         # TODO: Implement notification service
         # from app.services.notification_service import NotificationService
         # results = await NotificationService.send_all_daily_digests()
         # return results
         return {"status": "not_implemented"}
 
+    connect_to_mongo()  # Sync call, not await
     results = run_async(_run())
     return results
 
@@ -132,8 +132,6 @@ def run_matching_all_task():
     from app.database import connect_to_mongo
 
     async def _run():
-        await connect_to_mongo()
-
         users = await User.find(
             User.onboarding_completed == True,
             User.is_active == True
@@ -146,6 +144,7 @@ def run_matching_all_task():
 
         return {"users_processed": len(users), "matches_created": total_matches}
 
+    connect_to_mongo()  # Sync call, not await
     results = run_async(_run())
     return results
 
