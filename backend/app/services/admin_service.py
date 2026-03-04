@@ -342,7 +342,7 @@ class AdminService:
         limit: int = 50,
         search: Optional[str] = None,
         source: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+    ) -> Dict[str, Any]:
         """Get all jobs with pagination and filtering."""
         loop = asyncio.get_event_loop()
 
@@ -358,24 +358,31 @@ class AdminService:
             if source:
                 query = query.filter(source=source)
 
-            return list(query.skip(skip).limit(limit).order_by('-ingested_at'))
+            total = query.count()
+            jobs = list(query.skip(skip).limit(limit).order_by('-ingested_at'))
+            return jobs, total
 
-        jobs = await loop.run_in_executor(None, _query)
+        jobs, total = await loop.run_in_executor(None, _query)
 
-        return [
-            {
-                "id": str(job.id),
-                "title": job.title,
-                "company": job.company,
-                "location": job.location,
-                "remote": job.remote,
-                "source": job.source,
-                "ats_platform": job.ats_platform,
-                "apply_url": job.apply_url,
-                "ingested_at": job.ingested_at.isoformat() if job.ingested_at else None,
-            }
-            for job in jobs
-        ]
+        return {
+            "jobs": [
+                {
+                    "id": str(job.id),
+                    "title": job.title,
+                    "company": job.company,
+                    "location": job.location,
+                    "remote": job.remote,
+                    "source": job.source,
+                    "ats_platform": job.ats_platform,
+                    "apply_url": job.apply_url,
+                    "ingested_at": job.ingested_at.isoformat() if job.ingested_at else None,
+                }
+                for job in jobs
+            ],
+            "total": total,
+            "skip": skip,
+            "limit": limit
+        }
 
     @staticmethod
     async def delete_job(job_id: str) -> None:
@@ -396,7 +403,7 @@ class AdminService:
         skip: int = 0,
         limit: int = 50,
         user_id: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+    ) -> Dict[str, Any]:
         """Get all resumes with pagination and filtering."""
         loop = asyncio.get_event_loop()
 
@@ -406,9 +413,11 @@ class AdminService:
             if user_id:
                 query = query.filter(user_id=user_id)
 
-            return list(query.skip(skip).limit(limit).order_by('-created_at'))
+            total = query.count()
+            resumes = list(query.skip(skip).limit(limit).order_by('-created_at'))
+            return resumes, total
 
-        resumes = await loop.run_in_executor(None, _query)
+        resumes, total = await loop.run_in_executor(None, _query)
 
         result = []
         for resume in resumes:
@@ -423,10 +432,15 @@ class AdminService:
                     "job_title": job.title,
                     "job_company": job.company,
                     "pdf_url": resume.pdf_url,
-                    "ats_score": resume.ats_score,
+                    "ats_score": float(resume.ats_score) if resume.ats_score is not None else 0.0,
                     "created_at": resume.created_at.isoformat() if resume.created_at else None,
                 })
             except Exception:
                 continue
 
-        return result
+        return {
+            "resumes": result,
+            "total": total,
+            "skip": skip,
+            "limit": limit
+        }

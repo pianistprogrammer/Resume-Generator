@@ -10,7 +10,7 @@ from app.models.response import ApiResponse
 from pydantic import BaseModel
 
 
-router = APIRouter(prefix="/api/admin", tags=["Admin"])
+router = APIRouter(prefix="/admin", tags=["Admin"])
 
 
 # ===== Request Models =====
@@ -213,11 +213,11 @@ async def get_jobs(
     admin: User = Depends(get_current_admin)
 ):
     """Get all jobs with pagination and filtering."""
-    jobs = await AdminService.get_all_jobs(skip, limit, search, source)
+    result = await AdminService.get_all_jobs(skip, limit, search, source)
     return ApiResponse(
         success=True,
         msg="Jobs retrieved",
-        data={"jobs": jobs}
+        data=result
     )
 
 
@@ -244,9 +244,9 @@ async def get_resumes(
     admin: User = Depends(get_current_admin)
 ):
     """Get all resumes with pagination and filtering."""
-    resumes = await AdminService.get_all_resumes(skip, limit, user_id)
+    result = await AdminService.get_all_resumes(skip, limit, user_id)
     return ApiResponse(
         success=True,
         msg="Resumes retrieved",
-        data={"resumes": resumes}
+        data=result
     )

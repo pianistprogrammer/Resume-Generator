@@ -25,7 +25,7 @@ services:
     container_name: jobalert-backend
     restart: unless-stopped
     env_file:
-      - ./backend/.env
+      - .env
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -49,7 +49,7 @@ services:
     container_name: jobalert-celery-worker
     restart: unless-stopped
     env_file:
-      - ./backend/.env
+      - .env
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -70,7 +70,7 @@ services:
     container_name: jobalert-celery-beat
     restart: unless-stopped
     env_file:
-      - ./backend/.env
+      - .env
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -89,6 +89,8 @@ services:
       dockerfile: Dockerfile
     container_name: jobalert-frontend
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       - API_BASE_URL=http://backend:8000
       - NUXT_PUBLIC_API_BASE=http://localhost:8000

@@ -68,6 +68,15 @@ export const useAdminStore = defineStore('admin', () => {
   const jobs = ref<Job[]>([])
   const resumes = ref<Resume[]>([])
   const loading = ref(false)
+  
+  // Pagination state
+  const jobsTotal = ref(0)
+  const jobsSkip = ref(0)
+  const jobsLimit = ref(50)
+  
+  const resumesTotal = ref(0)
+  const resumesSkip = ref(0)
+  const resumesLimit = ref(10)
 
   // Dashboard
   const fetchDashboardStats = async () => {
@@ -192,13 +201,19 @@ export const useAdminStore = defineStore('admin', () => {
     try {
       loading.value = true
       const queryParams = new URLSearchParams()
-      if (params.skip !== undefined) queryParams.append('skip', params.skip.toString())
-      if (params.limit !== undefined) queryParams.append('limit', params.limit.toString())
+      const skip = params.skip !== undefined ? params.skip : jobsSkip.value
+      const limit = params.limit !== undefined ? params.limit : jobsLimit.value
+      
+      queryParams.append('skip', skip.toString())
+      queryParams.append('limit', limit.toString())
       if (params.search) queryParams.append('search', params.search)
       if (params.source) queryParams.append('source', params.source)
 
-      const response = await api.get<{ jobs: Job[] }>(`/admin/jobs?${queryParams.toString()}`)
+      const response = await api.get<{ jobs: Job[]; total: number; skip: number; limit: number }>(`/admin/jobs?${queryParams.toString()}`)
       jobs.value = response.jobs
+      jobsTotal.value = response.total
+      jobsSkip.value = response.skip
+      jobsLimit.value = response.limit
     } catch (error) {
       console.error('Failed to fetch jobs:', error)
       throw error
@@ -222,12 +237,18 @@ export const useAdminStore = defineStore('admin', () => {
     try {
       loading.value = true
       const queryParams = new URLSearchParams()
-      if (params.skip !== undefined) queryParams.append('skip', params.skip.toString())
-      if (params.limit !== undefined) queryParams.append('limit', params.limit.toString())
+      const skip = params.skip !== undefined ? params.skip : resumesSkip.value
+      const limit = params.limit !== undefined ? params.limit : resumesLimit.value
+      
+      queryParams.append('skip', skip.toString())
+      queryParams.append('limit', limit.toString())
       if (params.user_id) queryParams.append('user_id', params.user_id)
 
-      const response = await api.get<{ resumes: Resume[] }>(`/admin/resumes?${queryParams.toString()}`)
+      const response = await api.get<{ resumes: Resume[]; total: number; skip: number; limit: number }>(`/admin/resumes?${queryParams.toString()}`)
       resumes.value = response.resumes
+      resumesTotal.value = response.total
+      resumesSkip.value = response.skip
+      resumesLimit.value = response.limit
     } catch (error) {
       console.error('Failed to fetch resumes:', error)
       throw error
@@ -243,6 +264,12 @@ export const useAdminStore = defineStore('admin', () => {
     jobs,
     resumes,
     loading,
+    jobsTotal,
+    jobsSkip,
+    jobsLimit,
+    resumesTotal,
+    resumesSkip,
+    resumesLimit,
     fetchDashboardStats,
     fetchUsers,
     updateUserCredits,

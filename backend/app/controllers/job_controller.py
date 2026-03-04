@@ -60,7 +60,7 @@ class DashboardStatsResponse(BaseModel):
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
 
-@router.get("", response_model=List[JobResponse])
+@router.get("", response_model=ApiResponse)
 async def get_jobs(
     skip: int = 0,
     limit: int = 20,
@@ -70,7 +70,7 @@ async def get_jobs(
     current_user: User = Depends(get_current_user)
 ):
     """Get all jobs with optional filters."""
-    jobs = await JobService.get_jobs(
+    result = await JobService.get_jobs(
         skip=skip,
         limit=limit,
         company=company,
@@ -78,7 +78,7 @@ async def get_jobs(
         search=search
     )
 
-    return [
+    jobs_data = [
         {
             "id": str(job.id),
             "title": job.title,
@@ -95,8 +95,19 @@ async def get_jobs(
             "extracted_skills": job.extracted_skills,
             "ingested_at": job.ingested_at.isoformat()
         }
-        for job in jobs
+        for job in result["jobs"]
     ]
+
+    return ApiResponse(
+        success=True,
+        msg="Jobs retrieved",
+        data={
+            "jobs": jobs_data,
+            "total": result["total"],
+            "skip": result["skip"],
+            "limit": result["limit"]
+        }
+    )
 
 
 @router.get("/{job_id}", response_model=JobResponse)

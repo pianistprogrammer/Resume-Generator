@@ -28,20 +28,13 @@
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                 {{ user.full_name || 'No Name' }}
               </h3>
-              <span
-v-if="user.role === 'admin'"
-                class="badge bg-purple-600/20 text-purple-400 text-xs"
-              >
-                ADMIN
+              <span v-if="user.role === 'admin'" class="badge badge-admin">
+                Admin
               </span>
-              <span
-                :class="[
-                  'badge text-xs',
-                  user.is_active
-                    ? 'bg-emerald-600/20 text-emerald-400'
-                    : 'bg-gray-600/20 text-gray-400'
-                ]"
-              >
+              <span v-else class="badge badge-user">
+                User
+              </span>
+              <span :class="['badge', user.is_active ? 'badge-active' : 'badge-inactive']">
                 {{ user.is_active ? 'Active' : 'Inactive' }}
               </span>
             </div>

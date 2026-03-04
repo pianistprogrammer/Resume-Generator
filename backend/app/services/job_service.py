@@ -2,7 +2,7 @@
 
 import asyncio
 from functools import partial
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 from fastapi import HTTPException, status
 
@@ -32,7 +32,7 @@ class JobService:
         company: Optional[str] = None,
         remote: Optional[bool] = None,
         search: Optional[str] = None
-    ) -> List[Job]:
+    ) -> Dict[str, Any]:
         """Get jobs with optional filters."""
         loop = asyncio.get_event_loop()
 
@@ -51,9 +51,18 @@ class JobService:
                     Q(title__icontains=search) | Q(description__icontains=search)
                 )
 
-            return list(query.skip(skip).limit(limit).order_by('-ingested_at'))
+            total = query.count()
+            jobs = list(query.skip(skip).limit(limit).order_by('-ingested_at'))
+            return jobs, total
 
-        return await loop.run_in_executor(None, _query)
+        jobs, total = await loop.run_in_executor(None, _query)
+        
+        return {
+            "jobs": jobs,
+            "total": total,
+            "skip": skip,
+            "limit": limit
+        }
 
     @staticmethod
     async def get_recent_jobs(days: int = 7) -> List[Job]:

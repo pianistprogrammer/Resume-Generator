@@ -82,7 +82,7 @@
                   <MapPin :size="16" class="mr-1" />
                   {{ match.job.location }}
                 </span>
-                <span v-if="match.job.remote" class="badge bg-emerald-100 dark:bg-emerald-600/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30">
+                <span v-if="match.job.remote" class="badge badge-remote">
                   Remote
                 </span>
                 <span class="flex items-center">

@@ -117,7 +117,7 @@
 
               <div class="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                 <span v-if="match.job.location">📍 {{ match.job.location }}</span>
-                <span v-if="match.job.remote" class="badge bg-emerald-100 dark:bg-emerald-600/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30">
+                <span v-if="match.job.remote" class="badge badge-remote">
                   Remote
                 </span>
               </div>

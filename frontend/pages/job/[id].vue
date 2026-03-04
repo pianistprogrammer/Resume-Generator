@@ -48,13 +48,13 @@
                   <MapPin :size="16" class="mr-1" />
                   {{ match.job.location }}
                 </span>
-                <span v-if="match.job.remote" class="badge bg-emerald-100 dark:bg-emerald-600/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30">
+                <span v-if="match.job.remote" class="badge badge-remote">
                   Remote
                 </span>
-                <span v-if="match.job.experience_level" class="badge bg-blue-100 dark:bg-blue-600/20 text-blue-700 dark:text-blue-400 border border-blue-300 dark:border-blue-500/30">
+                <span v-if="match.job.experience_level" class="badge badge-info">
                   {{ match.job.experience_level }}
                 </span>
-                <span v-if="match.job.salary_min || match.job.salary_max" class="badge bg-purple-100 dark:bg-purple-600/20 text-purple-700 dark:text-purple-400 border border-purple-300 dark:border-purple-500/30">
+                <span v-if="match.job.salary_min || match.job.salary_max" class="badge badge-warning">
                   {{ formatSalary(match.job.salary_min, match.job.salary_max) }}
                 </span>
               </div>
@@ -149,7 +149,7 @@
             <span
               v-for="skill in match.score_breakdown.matched_skills"
               :key="skill"
-              class="badge bg-emerald-100 dark:bg-emerald-600/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30"
+class="badge badge-success"
             >
               {{ skill }}
             </span>

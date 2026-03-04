@@ -27,18 +27,11 @@
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                 {{ feed.name }}
               </h3>
-              <span
-                :class="[
-                  'badge text-xs',
-                  feed.is_active
-                    ? 'bg-emerald-600/20 text-emerald-400'
-                    : 'bg-gray-600/20 text-gray-400'
-                ]"
-              >
+              <span :class="['badge', feed.is_active ? 'badge-active' : 'badge-inactive']">
                 {{ feed.is_active ? 'Active' : 'Inactive' }}
               </span>
-              <span class="badge bg-blue-600/20 text-blue-400 text-xs">
-                {{ feed.feed_type.toUpperCase() }}
+              <span class="badge badge-type">
+                {{ feed.feed_type }}
               </span>
             </div>
 

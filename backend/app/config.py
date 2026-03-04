@@ -2,13 +2,31 @@
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
+from pathlib import Path
+
+
+# Check for .env file in project root first, then fall back to local .env
+# This allows running from backend/ directory or project root
+def get_env_file() -> str:
+    """Get the path to the .env file, checking root first, then local directory."""
+    root_env = Path(__file__).parent.parent.parent / ".env"
+    local_env = Path(__file__).parent.parent / ".env"
+    
+    # Prefer root .env for consistency with Docker setup
+    if root_env.exists():
+        return str(root_env)
+    elif local_env.exists():
+        return str(local_env)
+    else:
+        # Return root path even if it doesn't exist - pydantic will handle gracefully
+        return str(root_env)
 
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=get_env_file(),
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore"

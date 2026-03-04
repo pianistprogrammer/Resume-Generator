@@ -34,7 +34,7 @@
           <span
             v-for="(role, index) in preferences.desired_roles"
             :key="index"
-            class="badge bg-emerald-600/20 text-emerald-400 flex items-center space-x-2"
+            class="badge badge-success flex items-center space-x-2"
           >
             <span>{{ role }}</span>
             <button @click="removeRole(index)" class="hover:text-emerald-200">
@@ -69,7 +69,7 @@
           <span
             v-for="(location, index) in preferences.desired_locations"
             :key="index"
-            class="badge bg-blue-600/20 text-blue-400 flex items-center space-x-2"
+            class="badge badge-info flex items-center space-x-2"
           >
             <span>{{ location }}</span>
             <button @click="removeLocation(index)" class="hover:text-blue-200">
@@ -176,7 +176,7 @@
             <span
               v-for="(keyword, index) in preferences.required_keywords"
               :key="index"
-              class="badge bg-emerald-600/20 text-emerald-400 flex items-center space-x-2"
+              class="badge badge-success flex items-center space-x-2"
             >
               <span>{{ keyword }}</span>
               <button @click="removeRequiredKeyword(index)" class="hover:text-emerald-200">
@@ -205,7 +205,7 @@
             <span
               v-for="(keyword, index) in preferences.exclude_keywords"
               :key="index"
-              class="badge bg-red-600/20 text-red-400 flex items-center space-x-2"
+              class="badge badge-error flex items-center space-x-2"
             >
               <span>{{ keyword }}</span>
               <button @click="removeExcludeKeyword(index)" class="hover:text-red-200">
