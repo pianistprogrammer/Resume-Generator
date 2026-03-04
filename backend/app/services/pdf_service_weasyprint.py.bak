@@ -1,0 +1,467 @@
+"""PDF generation service for resumes."""
+
+import io
+import os
+from datetime import datetime
+from typing import Optional
+from weasyprint import HTML, CSS
+from weasyprint.text.fonts import FontConfiguration
+
+from app.models import Resume
+
+
+class PDFService:
+    """Service for generating PDF resumes from Resume documents."""
+
+    @staticmethod
+    def generate_pdf(resume: Resume) -> bytes:
+        """
+        Generate PDF from Resume document.
+
+        Returns:
+            bytes: PDF file content
+        """
+        # Render HTML from resume data
+        html_content = PDFService._render_html(resume)
+
+        # Generate PDF from HTML
+        pdf_bytes = PDFService._html_to_pdf(html_content)
+
+        return pdf_bytes
+
+    @staticmethod
+    def _render_html(resume: Resume) -> str:
+        """Convert Resume to ATS-optimized HTML."""
+        content = resume.content
+
+        # Build HTML with inline CSS for maximum ATS compatibility
+        html = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{content.full_name} - Resume</title>
+    <style>
+        /* Reset and base styles */
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+
+        body {{
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #333;
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 0.5in;
+        }}
+
+        /* Header Section */
+        .header {{
+            text-align: center;
+            margin-bottom: 1.5em;
+            padding-bottom: 1em;
+            border-bottom: 2px solid #059669;
+        }}
+
+        .name {{
+            font-size: 24pt;
+            font-weight: bold;
+            color: #047857;
+            margin-bottom: 0.3em;
+            letter-spacing: 0.5px;
+        }}
+
+        .contact-info {{
+            font-size: 10pt;
+            color: #555;
+            margin-top: 0.5em;
+        }}
+
+        .contact-info span {{
+            display: inline-block;
+            margin: 0 0.5em;
+        }}
+
+        .contact-info span::before {{
+            content: "•";
+            margin-right: 0.5em;
+            color: #059669;
+        }}
+
+        .contact-info span:first-child::before {{
+            content: "";
+            margin-right: 0;
+        }}
+
+        /* Section Headers */
+        .section {{
+            margin-bottom: 1.2em;
+        }}
+
+        .section-title {{
+            font-size: 13pt;
+            font-weight: bold;
+            color: #047857;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5em;
+            padding-bottom: 0.3em;
+            border-bottom: 1.5px solid #d1d5db;
+        }}
+
+        /* Summary Section */
+        .summary {{
+            font-size: 10.5pt;
+            line-height: 1.6;
+            text-align: justify;
+            color: #444;
+        }}
+
+        /* Skills Section */
+        .skills-grid {{
+            display: block;
+            margin-top: 0.5em;
+        }}
+
+        .skill-category {{
+            margin-bottom: 0.4em;
+        }}
+
+        .skill-category strong {{
+            color: #047857;
+            font-size: 10.5pt;
+        }}
+
+        .skill-list {{
+            display: inline;
+            font-size: 10pt;
+            color: #555;
+        }}
+
+        /* Experience Section */
+        .experience-item {{
+            margin-bottom: 1em;
+            page-break-inside: avoid;
+        }}
+
+        .experience-header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.3em;
+        }}
+
+        .job-title {{
+            font-size: 11.5pt;
+            font-weight: bold;
+            color: #1f2937;
+        }}
+
+        .company {{
+            font-size: 10.5pt;
+            font-weight: 600;
+            color: #047857;
+        }}
+
+        .date-location {{
+            font-size: 9.5pt;
+            color: #666;
+            font-style: italic;
+        }}
+
+        .experience-description {{
+            margin-top: 0.3em;
+            margin-left: 1.2em;
+        }}
+
+        .experience-description li {{
+            margin-bottom: 0.25em;
+            color: #444;
+            font-size: 10pt;
+            line-height: 1.5;
+        }}
+
+        /* Education Section */
+        .education-item {{
+            margin-bottom: 0.8em;
+        }}
+
+        .degree {{
+            font-size: 11pt;
+            font-weight: bold;
+            color: #1f2937;
+        }}
+
+        .institution {{
+            font-size: 10pt;
+            color: #047857;
+            margin-top: 0.1em;
+        }}
+
+        .education-date {{
+            font-size: 9.5pt;
+            color: #666;
+            font-style: italic;
+        }}
+
+        /* Projects Section */
+        .project-item {{
+            margin-bottom: 0.8em;
+        }}
+
+        .project-title {{
+            font-size: 11pt;
+            font-weight: bold;
+            color: #1f2937;
+        }}
+
+        .project-description {{
+            font-size: 10pt;
+            color: #555;
+            margin-top: 0.2em;
+        }}
+
+        /* Certifications */
+        .cert-item {{
+            font-size: 10pt;
+            margin-bottom: 0.3em;
+            padding-left: 1em;
+            text-indent: -1em;
+        }}
+
+        .cert-item::before {{
+            content: "▪";
+            color: #059669;
+            margin-right: 0.5em;
+        }}
+
+        /* Footer */
+        .footer {{
+            margin-top: 2em;
+            padding-top: 0.5em;
+            border-top: 1px solid #d1d5db;
+            text-align: center;
+            font-size: 8pt;
+            color: #999;
+        }}
+
+        /* Print optimization */
+        @page {{
+            size: letter;
+            margin: 0.5in;
+        }}
+
+        @media print {{
+            body {{
+                padding: 0;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="name">{content.full_name}</div>
+        <div class="contact-info">
+"""
+
+        # Add contact information
+        contact_parts = []
+        if content.email:
+            contact_parts.append(f'<span>{content.email}</span>')
+        if content.phone:
+            contact_parts.append(f'<span>{content.phone}</span>')
+        if content.location:
+            contact_parts.append(f'<span>{content.location}</span>')
+        if content.linkedin_url:
+            contact_parts.append(f'<span>{content.linkedin_url}</span>')
+        if content.portfolio_url:
+            contact_parts.append(f'<span>{content.portfolio_url}</span>')
+
+        html += '\n            '.join(contact_parts)
+        html += """
+        </div>
+    </div>
+"""
+
+        # Professional Summary
+        if content.summary:
+            html += f"""
+    <!-- Professional Summary -->
+    <div class="section">
+        <div class="section-title">Professional Summary</div>
+        <div class="summary">{content.summary}</div>
+    </div>
+"""
+
+        # Skills
+        if content.skills:
+            html += """
+    <!-- Skills -->
+    <div class="section">
+        <div class="section-title">Technical Skills</div>
+        <div class="skills-grid">
+"""
+            # Group skills if possible, otherwise just list them
+            skill_text = ', '.join(content.skills)
+            html += f"""
+            <div class="skill-category">
+                <span class="skill-list">{skill_text}</span>
+            </div>
+"""
+            html += """
+        </div>
+    </div>
+"""
+
+        # Professional Experience
+        if content.experience:
+            html += """
+    <!-- Professional Experience -->
+    <div class="section">
+        <div class="section-title">Professional Experience</div>
+"""
+            for exp in content.experience:
+                # Format date range
+                date_range = ""
+                if exp.get('start_date'):
+                    start = exp['start_date']
+                    end = exp.get('end_date', 'Present')
+                    date_range = f"{start} - {end}"
+
+                location = exp.get('location', '')
+                date_location = f"{date_range}"
+                if location:
+                    date_location = f"{date_range} | {location}"
+
+                html += f"""
+        <div class="experience-item">
+            <div class="job-title">{exp.get('title', 'Position')}</div>
+            <div class="company">{exp.get('company', 'Company')}</div>
+            <div class="date-location">{date_location}</div>
+"""
+                if exp.get('responsibilities'):
+                    html += """
+            <ul class="experience-description">
+"""
+                    for responsibility in exp['responsibilities']:
+                        html += f"                <li>{responsibility}</li>\n"
+                    html += """
+            </ul>
+"""
+                html += """
+        </div>
+"""
+            html += """
+    </div>
+"""
+
+        # Education
+        if content.education:
+            html += """
+    <!-- Education -->
+    <div class="section">
+        <div class="section-title">Education</div>
+"""
+            for edu in content.education:
+                grad_date = edu.get('graduation_date', '')
+                html += f"""
+        <div class="education-item">
+            <div class="degree">{edu.get('degree', 'Degree')} in {edu.get('field', 'Field')}</div>
+            <div class="institution">{edu.get('institution', 'Institution')}</div>
+            <div class="education-date">{grad_date}</div>
+        </div>
+"""
+            html += """
+    </div>
+"""
+
+        # Projects (if any)
+        if content.projects:
+            html += """
+    <!-- Projects -->
+    <div class="section">
+        <div class="section-title">Key Projects</div>
+"""
+            for project in content.projects:
+                html += f"""
+        <div class="project-item">
+            <div class="project-title">{project.get('name', 'Project')}</div>
+            <div class="project-description">{project.get('description', '')}</div>
+        </div>
+"""
+            html += """
+    </div>
+"""
+
+        # Certifications (if any)
+        if content.certifications:
+            html += """
+    <!-- Certifications -->
+    <div class="section">
+        <div class="section-title">Certifications</div>
+"""
+            for cert in content.certifications:
+                cert_text = cert.get('name', '')
+                if cert.get('issuer'):
+                    cert_text += f" - {cert['issuer']}"
+                if cert.get('date'):
+                    cert_text += f" ({cert['date']})"
+                html += f"""
+        <div class="cert-item">{cert_text}</div>
+"""
+            html += """
+    </div>
+"""
+
+        # Footer
+        html += f"""
+    <!-- Footer -->
+    <div class="footer">
+        Generated by JobAlert AI on {datetime.now().strftime('%B %d, %Y')}
+    </div>
+</body>
+</html>
+"""
+        return html
+
+    @staticmethod
+    def _html_to_pdf(html_content: str) -> bytes:
+        """Convert HTML to PDF using WeasyPrint."""
+        # Create a font configuration
+        font_config = FontConfiguration()
+
+        # Convert HTML to PDF
+        pdf_file = HTML(string=html_content).write_pdf(
+            font_config=font_config
+        )
+
+        return pdf_file
+
+    @staticmethod
+    async def save_pdf_to_storage(pdf_bytes: bytes, resume_id: str) -> str:
+        """
+        Save PDF to storage (local or cloud).
+
+        Returns:
+            str: URL to access the PDF
+        """
+        # For now, save locally
+        # TODO: Integrate with Cloudflare R2 or S3
+
+        storage_dir = os.path.join(os.getcwd(), "storage", "resumes")
+        os.makedirs(storage_dir, exist_ok=True)
+
+        filename = f"resume_{resume_id}.pdf"
+        filepath = os.path.join(storage_dir, filename)
+
+        with open(filepath, 'wb') as f:
+            f.write(pdf_bytes)
+
+        # Return a URL (in production, this would be a CDN URL)
+        return f"/storage/resumes/{filename}"
