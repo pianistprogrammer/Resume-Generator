@@ -27,18 +27,17 @@ fi
 echo "✓ Docker and Docker Compose are installed"
 echo ""
 
-# Check for .env files
-if [ ! -f ".env" ]; then
-    echo "📝 Creating .env file from template..."
-    cp .env.docker .env
-    echo "⚠️  Please edit .env file with your MongoDB credentials"
-fi
-
+# Check for backend .env file
 if [ ! -f "backend/.env" ]; then
     echo "📝 Creating backend/.env file..."
     if [ -f "backend/.env.example" ]; then
         cp backend/.env.example backend/.env
-        echo "⚠️  Please edit backend/.env file with your API keys and secrets"
+        echo "⚠️  IMPORTANT: Edit backend/.env file with:"
+        echo "   - MONGODB_URL (your MongoDB connection string)"
+        echo "   - API keys (Anthropic, S3, SMTP, etc.)"
+        echo ""
+        echo "Press Enter after you've configured backend/.env"
+        read -r
     else
         echo "❌ backend/.env.example not found"
         exit 1

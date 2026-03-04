@@ -1,28 +1,6 @@
 version: '3.8'
 
 services:
-  # MongoDB Database
-  mongodb:
-    image: mongo:8.0
-    container_name: jobalert-mongodb
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USERNAME:-admin}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD:-password}
-      MONGO_INITDB_DATABASE: ${MONGODB_DB_NAME:-jobalert}
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-      - mongodb_config:/data/configdb
-    networks:
-      - jobalert-network
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # Redis (Celery Broker)
   redis:
     image: redis:7-alpine
@@ -50,14 +28,11 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      - MONGODB_URL=mongodb://${MONGODB_ROOT_USERNAME:-admin}:${MONGODB_ROOT_PASSWORD:-password}@mongodb:27017/${MONGODB_DB_NAME:-jobalert}?authSource=admin
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     ports:
       - "8000:8000"
     depends_on:
-      mongodb:
-        condition: service_healthy
       redis:
         condition: service_healthy
     volumes:
@@ -77,11 +52,9 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      - MONGODB_URL=mongodb://${MONGODB_ROOT_USERNAME:-admin}:${MONGODB_ROOT_PASSWORD:-password}@mongodb:27017/${MONGODB_DB_NAME:-jobalert}?authSource=admin
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
-      - mongodb
       - redis
     volumes:
       - ./backend:/app
@@ -100,11 +73,9 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      - MONGODB_URL=mongodb://${MONGODB_ROOT_USERNAME:-admin}:${MONGODB_ROOT_PASSWORD:-password}@mongodb:27017/${MONGODB_DB_NAME:-jobalert}?authSource=admin
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
-      - mongodb
       - redis
     volumes:
       - ./backend:/app
@@ -139,7 +110,5 @@ networks:
     driver: bridge
 
 volumes:
-  mongodb_data:
-  mongodb_config:
   redis_data:
   backend_storage:
