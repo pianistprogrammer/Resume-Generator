@@ -40,9 +40,10 @@
       >
         <div class="flex items-start justify-between">
           <div class="flex-1">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            <NuxtLink :to="`/admin/job/${job.id}`"
+              class="text-lg font-semibold text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 mb-2 inline-block transition-colors">
               {{ job.title }}
-            </h3>
+            </NuxtLink>
             <p class="text-gray-600 dark:text-gray-400 mb-3">
               {{ job.company }}
             </p>
@@ -68,11 +69,16 @@
           </div>
 
           <div class="flex items-center space-x-2 ml-4">
+            <NuxtLink :to="`/admin/job/${job.id}`"
+              class="p-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+              title="View Details">
+              <Eye :size="18" />
+            </NuxtLink>
             <a
               :href="job.apply_url"
               target="_blank"
               class="p-2 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
-              title="View Job"
+              title="View Application"
             >
               <ExternalLink :size="18" />
             </a>
@@ -129,7 +135,7 @@
 </template>
 
 <script setup lang="ts">
-import { ExternalLink, Trash2, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { ExternalLink, Trash2, ChevronLeft, ChevronRight, Eye } from 'lucide-vue-next'
 import { useAdminStore } from '~/stores/admin'
 
 const adminStore = useAdminStore()

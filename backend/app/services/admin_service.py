@@ -385,6 +385,37 @@ class AdminService:
         }
 
     @staticmethod
+    async def get_job_details(job_id: str) -> Dict[str, Any]:
+        """Get detailed job information."""
+        loop = asyncio.get_event_loop()
+
+        def _get():
+            job = Job.objects.get(id=job_id)
+            return job
+
+        job = await loop.run_in_executor(None, _get)
+
+        return {
+            "id": str(job.id),
+            "title": job.title,
+            "company": job.company,
+            "description": job.description,
+            "apply_url": job.apply_url,
+            "location": job.location,
+            "remote": job.remote,
+            "salary_min": job.salary_min,
+            "salary_max": job.salary_max,
+            "experience_level": job.experience_level,
+            "source": job.source,
+            "source_url": job.source_url,
+            "ats_platform": job.ats_platform,
+            "fingerprint": job.fingerprint,
+            "extracted_skills": job.extracted_skills if job.extracted_skills else [],
+            "posted_at": job.posted_at.isoformat() if job.posted_at else None,
+            "ingested_at": job.ingested_at.isoformat() if job.ingested_at else None,
+        }
+
+    @staticmethod
     async def delete_job(job_id: str) -> None:
         """Delete a job posting."""
         loop = asyncio.get_event_loop()
@@ -432,7 +463,7 @@ class AdminService:
                     "job_title": job.title,
                     "job_company": job.company,
                     "pdf_url": resume.pdf_url,
-                    "ats_score": float(resume.ats_score) if resume.ats_score is not None else 0.0,
+                    "ats_score": float(resume.ats_score) if resume.ats_score is not None else (float(resume.content.ats_score) if resume.content and resume.content.ats_score is not None else 0.0),
                     "created_at": resume.created_at.isoformat() if resume.created_at else None,
                 })
             except Exception:

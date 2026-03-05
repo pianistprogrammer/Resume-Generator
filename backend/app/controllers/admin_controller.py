@@ -221,6 +221,20 @@ async def get_jobs(
     )
 
 
+@router.get("/jobs/{job_id}", response_model=ApiResponse)
+async def get_job(
+    job_id: str,
+    admin: User = Depends(get_current_admin)
+):
+    """Get detailed job information."""
+    job = await AdminService.get_job_details(job_id)
+    return ApiResponse(
+        success=True,
+        msg="Job details retrieved",
+        data=job
+    )
+
+
 @router.delete("/jobs/{job_id}", response_model=ApiResponse)
 async def delete_job(
     job_id: str,

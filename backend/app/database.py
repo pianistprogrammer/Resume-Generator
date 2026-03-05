@@ -71,11 +71,64 @@ def initialize_admin_user():
         print(f"❌ Failed to initialize admin user: {e}")
 
 
+def migrate_user_role_field():
+    """Ensure all users have the role field (migration from is_admin to role)."""
+    try:
+        from pymongo import MongoClient
+        
+        # Connect directly with pymongo to bypass MongoEngine schema validation
+        client = MongoClient(settings.mongodb_url)
+        db = client[settings.mongodb_db_name]
+        users_collection = db['users']
+        
+        # Find users without role field or with is_admin field
+        users_needing_migration = users_collection.count_documents({
+            '$or': [
+                {'role': {'$exists': False}},
+                {'is_admin': {'$exists': True}}
+            ]
+        })
+        
+        if users_needing_migration == 0:
+            print("✅ All users have role field - no migration needed")
+            client.close()
+            return
+        
+        print(f"🔄 Migrating {users_needing_migration} users to add role field...")
+        
+        # Migrate users with is_admin field
+        users_with_is_admin = users_collection.find({'is_admin': {'$exists': True}})
+        for user in users_with_is_admin:
+            is_admin = user.get('is_admin', False)
+            new_role = 'admin' if is_admin else 'user'
+            
+            users_collection.update_one(
+                {'_id': user['_id']},
+                {
+                    '$set': {'role': new_role},
+                    '$unset': {'is_admin': ''}
+                }
+            )
+        
+        # Add role field to users without it
+        users_collection.update_many(
+            {'role': {'$exists': False}},
+            {'$set': {'role': 'user'}}
+        )
+        
+        print(f"✅ User role migration complete - migrated {users_needing_migration} users")
+        client.close()
+        
+    except Exception as e:
+        print(f"❌ Failed to migrate user role field: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """FastAPI lifespan context manager for database connection."""
     # Startup
     connect_to_mongo()
+    migrate_user_role_field()  # Ensure all users have role field
     initialize_admin_user()
     yield
     # Shutdown

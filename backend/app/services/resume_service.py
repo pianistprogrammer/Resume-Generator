@@ -221,7 +221,8 @@ RESPOND ONLY WITH VALID JSON. NO EXPLANATIONS OR ADDITIONAL TEXT."""
                 job_id=str(job.id),
                 content=content,
                 generation_time_seconds=generation_time,
-                tokens_used=tokens_used
+                tokens_used=tokens_used,
+                ats_score=resume_data.get("ats_score", 85.0)  # Store at top level too for easier querying
             )
 
             def _save_resume():
